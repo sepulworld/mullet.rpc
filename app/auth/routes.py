@@ -8,7 +8,7 @@ from flask_login import (
     login_user,
     logout_user,
 )
-from helpers import is_access_token_valid, is_id_token_valid, oauth_config
+from app.auth.helpers import is_access_token_valid, is_id_token_valid, oauth_config
 from app import db, login
 from app.auth import bp
 from app.models import User
