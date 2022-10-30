@@ -1,0 +1,75 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mulletrpc-pv-claim
+  labels:
+    app: mulletrpc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1G
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mulletrpc
+  labels:
+    app: mulletrpc
+spec:
+  selector:
+    matchLabels:
+      app: mulletrpc
+  template:
+    metadata:
+      labels:
+        app: mulletrpc
+    spec:
+      containers:
+        - name: mulletrpc
+          image: mulletrpc
+          env:
+            - name: DATABASE_URL 
+              value: sqlite:////db/app.db
+          ports:
+            - containerPort: 5000 
+          volumeMounts:
+          - name: persistent-storage
+            mountPath: /db
+      volumes:
+      - name: persistent-storage
+        persistentVolumeClaim:
+          claimName: mulletrpc-pv-claim            
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: default 
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mulletrpc-pod-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/log", "namespaces", "events"]
+  verbs: ["get", "watch", "list", "log"]
+- apiGroups: ["apps", "extensions"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: mulletrpc-pod-reader
+subjects:
+- kind: ServiceAccount
+  name: default 
+  namespace: default 
+roleRef:
+  kind: ClusterRole
+  name: mulletrpc-pod-reader
+  apiGroup: rbac.authorization.k8s.io
