@@ -30,7 +30,7 @@ class PaginatedAPIMixin(object):
 
 
 class User(UserMixin, PaginatedAPIMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(64), primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
 
@@ -62,4 +62,4 @@ class User(UserMixin, PaginatedAPIMixin, db.Model):
 
 @login.user_loader
 def load_user(id):
-    return User.query.get(int(id))
+    return User.query.get(str(id))

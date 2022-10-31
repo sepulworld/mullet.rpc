@@ -8,25 +8,25 @@ from flask_login import (
     login_user,
     logout_user,
 )
-from app.auth.helpers import is_access_token_valid, is_id_token_valid, oauth_config
+from app.auth.helpers import is_access_token_valid, is_id_token_valid
 from app import db, login
 from app.auth import bp
 from app.models import User
 
 
 APP_STATE = 'ApplicationState'
-NONCE = 'SampleNonce'
+
 
 @login.user_loader
 def load_user(user_id):
-    return User.get(user_id)
+    return User.query.get(str(user_id))
 
 
 @bp.route("/login")
 def login():
     # get request params
-    query_params = {'client_id': oauth_config["client_id"],
-                    'redirect_uri': oauth_config["redirect_uri"],
+    query_params = {'client_id': current_app.config["CLIENT_ID"],
+                    'redirect_uri': current_app.config["REDIRECT_URI"],
                     'scope': "openid email profile",
                     'state': current_app.config["APP_STATE"],
                     'nonce': current_app.config["NONCE"],
@@ -35,17 +35,11 @@ def login():
 
     # build request_uri
     request_uri = "{base_url}?{query_params}".format(
-        base_url=current_app.config["auth_uri"],
+        base_url=current_app.config["AUTH_URI"],
         query_params=requests.compat.urlencode(query_params)
     )
 
     return redirect(request_uri)
-
-
-@bp.route("/profile")
-@login_required
-def profile():
-    return render_template("profile.html", user=current_user)
 
 
 @bp.route("/authorization-code/callback")
@@ -60,10 +54,10 @@ def callback():
                     }
     query_params = requests.compat.urlencode(query_params)
     exchange = requests.post(
-        oauth_config["token_uri"],
+        current_app.config["TOKEN_URI"],
         headers=headers,
         data=query_params,
-        auth=(oauth_config["client_id"], oauth_config["client_secret"]),
+        auth=(current_app.config["CLIENT_ID"], current_app.config["CLIENT_SECRET"]),
     ).json()
 
     # Get tokens and validate
@@ -72,14 +66,14 @@ def callback():
     access_token = exchange["access_token"]
     id_token = exchange["id_token"]
 
-    if not is_access_token_valid(access_token, oauth_config["issuer"]):
+    if not is_access_token_valid(access_token, current_app.config["ISSUER"]):
         return "Access token is invalid", 403
 
-    if not is_id_token_valid(id_token, oauth_config["issuer"], oauth_config["client_id"], NONCE):
+    if not is_id_token_valid(id_token, current_app.config["ISSUER"], current_app.config["CLIENT_ID"], current_app.config["NONCE"]):
         return "ID token is invalid", 403
 
     # Authorization flow successful, get userinfo and login user
-    userinfo_response = requests.get(oauth_config["userinfo_uri"],
+    userinfo_response = requests.get(current_app.config["USERINFO_URI"],
                                      headers={'Authorization': f'Bearer {access_token}'}).json()
 
     unique_id = userinfo_response["sub"]
@@ -87,7 +81,7 @@ def callback():
     user_name = userinfo_response["given_name"]
 
     user = User(
-        id_=unique_id, name=user_name, email=user_email
+        id=unique_id, username=user_name, email=user_email
     )
 
     if not User.query.filter_by(id=unique_id).first():
@@ -96,11 +90,11 @@ def callback():
 
     login_user(user)
 
-    return redirect(url_for("profile"))
+    return redirect(url_for("main.index"))
 
 
 @bp.route("/logout", methods=["GET", "POST"])
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("home"))
+    return redirect(url_for("main.index"))

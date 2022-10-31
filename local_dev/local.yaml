@@ -31,6 +31,46 @@ spec:
         - name: mulletrpc
           image: mulletrpc
           env:
+            - name: CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: CLIENT_ID
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: CLIENT_SECRET
+            - name: REDIRECT_URI 
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: REDIRECT_URI
+            - name: ISSUER
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: ISSUER
+            - name: TOKEN_URI
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: TOKEN_URI
+            - name: AUTH_URI
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: AUTH_URI
+            - name: USERINFO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: USERINFO_URI
+            - name: TOKEN_INTROSPECTION_URI
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: TOKEN_INTROSPECTION_URI
             - name: DATABASE_URL 
               value: sqlite:////db/app.db
           ports:

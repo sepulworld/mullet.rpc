@@ -15,8 +15,18 @@ class Config(object):
     # Insert your emails for admins in this list
     ADMINS = ['']
     REDIS_HOST = os.environ.get('REDIS_HOST') or ''
+
+    # oauth config
     APP_STATE = 'ApplicationState'
-    NONCE = 'Nonce'
+    NONCE = 'SampleNonce'
+    CLIENT_ID = os.environ.get('CLIENT_ID') or ''
+    CLIENT_SECRET = os.environ.get('CLIENT_SECRET') or ''
+    REDIRECT_URI = os.environ.get('REDIRECT_URI') or ''
+    AUTH_URI = os.environ.get('AUTH_URI') or ''
+    TOKEN_URI = os.environ.get('TOKEN_URI') or ''
+    ISSUER = os.environ.get('ISSUER') or ''
+    USERINFO_URI = os.environ.get('USERINFO_URI') or ''
+    TOKEN_INTROSPECTION_URI = os.environ.get('TOKEN_INTROSPECTION_URI') or ''
 
     # If using Gitlab a user name for the token is needed, Github will only need a token
     GIT_USER = os.environ.get("GIT_USER") or ""

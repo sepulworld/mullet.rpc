@@ -5,8 +5,7 @@ from flask_login import current_user, login_required
 from flask_babel import _, get_locale
 from app import db
 from app.main.forms import (
-    EditProfileForm, EmptyForm,
-    GrpcEndpointForm, GrpCurlForm
+    EmptyForm, GrpcEndpointForm, GrpCurlForm
 )
 
 from app.models import User
@@ -22,11 +21,13 @@ def before_request():
 
 
 @bp.route("/", methods=["GET", "POST"])
-def dinghy_grpc_tasks_landing_page():
+@bp.route("/index", methods=["GET", "POST"])
+@login_required
+def index():
     """Index page for grpc tasks"""
     grpc_new_endpoint_form = GrpcEndpointForm()
     grpc_submit_grpcurl = GrpCurlForm()
-    all_current_endpoints = get_all_grpc_endpoints()
+    #all_current_endpoints = get_all_grpc_endpoints()
 
     if grpc_new_endpoint_form.validate_on_submit():
         grpc_endpoint = grpc_new_endpoint_form.grpc_endpoint.data
@@ -53,9 +54,9 @@ def dinghy_grpc_tasks_landing_page():
         )
 
     return render_template(
-        "grpc.html",
-        grpc_new_endpoint_form=grpc_new_endpoint_form,
-        all_current_endpoints=all_current_endpoints,
+        "index.html",
+        #grpc_new_endpoint_form=grpc_new_endpoint_form,
+        #all_current_endpoints=all_current_endpoints,
     )
 
 

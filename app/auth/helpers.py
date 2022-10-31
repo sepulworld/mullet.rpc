@@ -21,15 +21,6 @@ def is_id_token_valid(token, issuer, client_id, nonce):
     try:
         loop.run_until_complete(jwt_verifier.verify(token, nonce=nonce))
         return True
-    except Exception:
+    except Exception as e:
+        print(e)
         return False
-
-
-def load_config(fname='./client_secrets.json'):
-    config = None
-    with open(fname) as f:
-        config = json.load(f)
-    return config
-
-
-oauth_config = load_config()
